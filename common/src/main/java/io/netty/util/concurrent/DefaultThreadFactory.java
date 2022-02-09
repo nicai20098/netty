@@ -37,6 +37,7 @@ public class DefaultThreadFactory implements ThreadFactory {
     protected final ThreadGroup threadGroup;
 
     public DefaultThreadFactory(Class<?> poolType) {
+        // Thread.NORM_PRIORITY 优先级为5
         this(poolType, false, Thread.NORM_PRIORITY);
     }
 
@@ -64,9 +65,13 @@ public class DefaultThreadFactory implements ThreadFactory {
         this(toPoolName(poolType), daemon, priority);
     }
 
+    /**
+     * 根据class 返回类名
+     */
     public static String toPoolName(Class<?> poolType) {
+        //校验入参 如果为null throw NPL异常
         ObjectUtil.checkNotNull(poolType, "poolType");
-
+        //根据class 返回具体的类名
         String poolName = StringUtil.simpleClassName(poolType);
         switch (poolName.length()) {
             case 0:
@@ -74,6 +79,7 @@ public class DefaultThreadFactory implements ThreadFactory {
             case 1:
                 return poolName.toLowerCase(Locale.US);
             default:
+                //判断首位和第二位 返回首位为小写的类名
                 if (Character.isUpperCase(poolName.charAt(0)) && Character.isLowerCase(poolName.charAt(1))) {
                     return Character.toLowerCase(poolName.charAt(0)) + poolName.substring(1);
                 } else {
@@ -85,6 +91,7 @@ public class DefaultThreadFactory implements ThreadFactory {
     public DefaultThreadFactory(String poolName, boolean daemon, int priority, ThreadGroup threadGroup) {
         ObjectUtil.checkNotNull(poolName, "poolName");
 
+        //校验线程优先级 priority 的有效性
         if (priority < Thread.MIN_PRIORITY || priority > Thread.MAX_PRIORITY) {
             throw new IllegalArgumentException(
                     "priority: " + priority + " (expected: Thread.MIN_PRIORITY <= priority <= Thread.MAX_PRIORITY)");

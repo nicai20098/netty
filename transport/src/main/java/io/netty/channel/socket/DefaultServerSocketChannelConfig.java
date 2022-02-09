@@ -42,6 +42,7 @@ public class DefaultServerSocketChannelConfig extends DefaultChannelConfig
                                               implements ServerSocketChannelConfig {
 
     protected final ServerSocket javaSocket;
+    //握手的滑动窗口 数量
     private volatile int backlog = NetUtil.SOMAXCONN;
 
     /**

@@ -21,6 +21,8 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
@@ -35,7 +37,7 @@ public final class TelnetClient {
 
     static final boolean SSL = System.getProperty("ssl") != null;
     static final String HOST = System.getProperty("host", "127.0.0.1");
-    static final int PORT = Integer.parseInt(System.getProperty("port", SSL? "8992" : "8023"));
+    static final int PORT = Integer.parseInt(System.getProperty("port", SSL? "8992" : "8024"));
 
     public static void main(String[] args) throws Exception {
         // Configure SSL.
@@ -52,6 +54,7 @@ public final class TelnetClient {
             Bootstrap b = new Bootstrap();
             b.group(group)
              .channel(NioSocketChannel.class)
+                .handler(new LoggingHandler(LogLevel.DEBUG))
              .handler(new TelnetClientInitializer(sslCtx));
 
             // Start the connection attempt.

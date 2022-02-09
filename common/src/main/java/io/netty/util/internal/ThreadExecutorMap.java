@@ -69,6 +69,7 @@ public final class ThreadExecutorMap {
         return new Runnable() {
             @Override
             public void run() {
+                //使用FastThreadLocal
                 setCurrentEventExecutor(eventExecutor);
                 try {
                     command.run();

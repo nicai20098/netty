@@ -74,6 +74,7 @@ public final class ByteBufUtil {
     static final ByteBufAllocator DEFAULT_ALLOCATOR;
 
     static {
+        //是否使用池化处理  io.netty.allocator.type
         String allocType = SystemPropertyUtil.get(
                 "io.netty.allocator.type", PlatformDependent.isAndroid() ? "unpooled" : "pooled");
         allocType = allocType.toLowerCase(Locale.US).trim();

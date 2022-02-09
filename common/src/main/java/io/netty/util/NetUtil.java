@@ -148,6 +148,7 @@ public final class NetUtil {
         // As a SecurityManager may prevent reading the somaxconn file we wrap this in a privileged block.
         //
         // See https://github.com/netty/netty/issues/3680
+        // 根据平台不一样 有不一样的限制 window是200
         SOMAXCONN = AccessController.doPrivileged(new PrivilegedAction<Integer>() {
             @Override
             public Integer run() {
