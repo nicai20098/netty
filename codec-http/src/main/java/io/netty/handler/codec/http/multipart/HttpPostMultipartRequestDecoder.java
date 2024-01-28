@@ -30,6 +30,7 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.ErrorDataDec
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.MultiPartStatus;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.NotEnoughDataDecoderException;
 import io.netty.util.CharsetUtil;
+import io.netty.util.internal.EmptyArrays;
 import io.netty.util.internal.InternalThreadLocalMap;
 import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.StringUtil;
@@ -771,6 +772,18 @@ public class HttpPostMultipartRequestDecoder implements InterfaceHttpPostRequest
                                 throw new ErrorDataDecoderException(e);
                             }
                             currentFieldAttributes.put(HttpHeaderValues.CHARSET, attribute);
+                        } else if (contents[i].contains("=")) {
+                            String name = StringUtil.substringBefore(contents[i], '=');
+                            String values = StringUtil.substringAfter(contents[i], '=');
+                            Attribute attribute;
+                            try {
+                                attribute = factory.createAttribute(request, cleanString(name), values);
+                            } catch (NullPointerException e) {
+                                throw new ErrorDataDecoderException(e);
+                            } catch (IllegalArgumentException e) {
+                                throw new ErrorDataDecoderException(e);
+                            }
+                            currentFieldAttributes.put(name, attribute);
                         } else {
                             Attribute attribute;
                             try {
@@ -1365,7 +1378,7 @@ public class HttpPostMultipartRequestDecoder implements InterfaceHttpPostRequest
             }
         }
         values.add(svalue.substring(start));
-        return values.toArray(new String[0]);
+        return values.toArray(EmptyArrays.EMPTY_STRINGS);
     }
 
     /**

@@ -44,12 +44,10 @@ import static io.netty.channel.unix.UnixChannelOption.SO_REUSEPORT;
 
 @UnstableApi
 public final class KQueueDatagramChannelConfig extends KQueueChannelConfig implements DatagramChannelConfig {
-    private static final RecvByteBufAllocator DEFAULT_RCVBUF_ALLOCATOR = new FixedRecvByteBufAllocator(2048);
     private boolean activeOnOpen;
 
     KQueueDatagramChannelConfig(KQueueDatagramChannel channel) {
-        super(channel);
-        setRecvByteBufAllocator(DEFAULT_RCVBUF_ALLOCATOR);
+        super(channel, new FixedRecvByteBufAllocator(2048));
     }
 
     @Override

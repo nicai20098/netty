@@ -23,6 +23,7 @@ import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.ChannelInputShutdownEvent;
+import io.netty.util.IllegalReferenceCountException;
 import io.netty.util.internal.ObjectUtil;
 import io.netty.util.internal.StringUtil;
 
@@ -80,6 +81,11 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     public static final Cumulator MERGE_CUMULATOR = new Cumulator() {
         @Override
         public ByteBuf cumulate(ByteBufAllocator alloc, ByteBuf cumulation, ByteBuf in) {
+            if (cumulation == in) {
+                // when the in buffer is the same as the cumulation it is doubly retained, release it once
+                in.release();
+                return cumulation;
+            }
             if (!cumulation.isReadable() && in.isContiguous()) {
                 // If cumulation is empty and input buffer is contiguous, use it directly
                 cumulation.release();
@@ -115,6 +121,11 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     public static final Cumulator COMPOSITE_CUMULATOR = new Cumulator() {
         @Override
         public ByteBuf cumulate(ByteBufAllocator alloc, ByteBuf cumulation, ByteBuf in) {
+            if (cumulation == in) {
+                // when the in buffer is the same as the cumulation it is doubly retained, release it once
+                in.release();
+                return cumulation;
+            }
             if (!cumulation.isReadable()) {
                 cumulation.release();
                 return in;
@@ -285,7 +296,15 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                 try {
                     if (cumulation != null && !cumulation.isReadable()) {
                         numReads = 0;
-                        cumulation.release();
+                        try {
+                            cumulation.release();
+                        } catch (IllegalReferenceCountException e) {
+                            //noinspection ThrowFromFinallyBlock
+                            throw new IllegalReferenceCountException(
+                                    getClass().getSimpleName() + "#decode() might have released its input buffer, " +
+                                            "or passed it down the pipeline without a retain() call, " +
+                                            "which is not allowed.", e);
+                        }
                         cumulation = null;
                     } else if (++numReads >= discardAfterReads) {
                         // We did enough reads already try to discard some bytes, so we not risk to see a OOME.
