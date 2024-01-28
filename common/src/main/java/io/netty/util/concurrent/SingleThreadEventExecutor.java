@@ -457,6 +457,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      */
     protected boolean runAllTasks(long timeoutNanos) {
         fetchFromScheduledTaskQueue();
+        // 轮询任务
         Runnable task = pollTask();
         if (task == null) {
             afterRunningAllTasks();
@@ -467,6 +468,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         long runTasks = 0;
         long lastExecutionTime;
         for (;;) {
+            // 执行任务
             safeExecute(task);
 
             runTasks ++;
@@ -832,9 +834,12 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     }
 
     private void execute(Runnable task, boolean immediate) {
+        // 判断当前线程是不是eventLoop
         boolean inEventLoop = inEventLoop();
+        // 添加到任务队列
         addTask(task);
         if (!inEventLoop) {
+            // 启动线程
             startThread();
             if (isShutdown()) {
                 boolean reject = false;
@@ -952,6 +957,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
             if (STATE_UPDATER.compareAndSet(this, ST_NOT_STARTED, ST_STARTED)) {
                 boolean success = false;
                 try {
+                    // 启动线程
                     doStartThread();
                     success = true;
                 } finally {
@@ -994,6 +1000,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
                 boolean success = false;
                 updateLastExecutionTime();
                 try {
+                    // 执行单线程事件执行器方法
                     SingleThreadEventExecutor.this.run();
                     success = true;
                 } catch (Throwable t) {

@@ -132,15 +132,15 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
     void init(Channel channel) {
         setChannelOptions(channel, newOptionsArray(), logger);
         setAttributes(channel, newAttributesArray());
-
+        // 得到通道pipeline
         ChannelPipeline p = channel.pipeline();
-
+        // 赋值workGroup与服务端handler
         final EventLoopGroup currentChildGroup = childGroup;
         final ChannelHandler currentChildHandler = childHandler;
         final Entry<ChannelOption<?>, Object>[] currentChildOptions = newOptionsArray(childOptions);
         final Entry<AttributeKey<?>, Object>[] currentChildAttrs = newAttributesArray(childAttrs);
         final Collection<ChannelInitializerExtension> extensions = getInitializerExtensions();
-
+        // 添加通道初始化handler
         p.addLast(new ChannelInitializer<Channel>() {
             @Override
             public void initChannel(final Channel ch) {
@@ -153,6 +153,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                 ch.eventLoop().execute(new Runnable() {
                     @Override
                     public void run() {
+                        // 在initChannel方法中添加ServerBootstrapAcceptor的handler
                         pipeline.addLast(new ServerBootstrapAcceptor(
                                 ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs,
                                 extensions));

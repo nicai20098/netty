@@ -259,6 +259,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * Create a new {@link Channel} and bind it.
      */
     public ChannelFuture bind(int inetPort) {
+        // 绑定端口
         return bind(new InetSocketAddress(inetPort));
     }
 
@@ -285,6 +286,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     private ChannelFuture doBind(final SocketAddress localAddress) {
+        // 初始化和注册
         final ChannelFuture regFuture = initAndRegister();
         final Channel channel = regFuture.channel();
         if (regFuture.cause() != null) {
@@ -323,7 +325,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
+            // 创建通道
             channel = channelFactory.newChannel();
+            // 通道初始化
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {

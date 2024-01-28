@@ -70,6 +70,7 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
     }
 
     public NioEventLoopGroup(int nThreads, Executor executor) {
+        // SelectorProvider.provider() 选择器提供程序
         this(nThreads, executor, SelectorProvider.provider());
     }
 
@@ -179,6 +180,7 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
         if (argsLength > 4) {
             tailTaskQueueFactory = (EventLoopTaskQueueFactory) args[4];
         }
+        // 创建NioEventLoop
         return new NioEventLoop(this, executor, selectorProvider,
                 selectStrategyFactory.newSelectStrategy(),
                 rejectedExecutionHandler, taskQueueFactory, tailTaskQueueFactory);

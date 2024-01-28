@@ -139,10 +139,12 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     NioEventLoop(NioEventLoopGroup parent, Executor executor, SelectorProvider selectorProvider,
                  SelectStrategy strategy, RejectedExecutionHandler rejectedExecutionHandler,
                  EventLoopTaskQueueFactory taskQueueFactory, EventLoopTaskQueueFactory tailTaskQueueFactory) {
+        // 创建TaskQueue
         super(parent, executor, false, newTaskQueue(taskQueueFactory), newTaskQueue(tailTaskQueueFactory),
                 rejectedExecutionHandler);
         this.provider = ObjectUtil.checkNotNull(selectorProvider, "selectorProvider");
         this.selectStrategy = ObjectUtil.checkNotNull(strategy, "selectStrategy");
+        // 创建选择器
         final SelectorTuple selectorTuple = openSelector();
         this.selector = selectorTuple.selector;
         this.unwrappedSelector = selectorTuple.unwrappedSelector;
@@ -559,6 +561,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 } else if (strategy > 0) {
                     final long ioStartTime = System.nanoTime();
                     try {
+                        // 处理SelectedKey
                         processSelectedKeys();
                     } finally {
                         // Ensure we always run tasks.
