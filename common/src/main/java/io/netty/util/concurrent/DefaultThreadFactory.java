@@ -100,6 +100,7 @@ public class DefaultThreadFactory implements ThreadFactory {
         this(poolName, daemon, priority, null);
     }
 
+    // 使用 FastThreadLocalThread
     @Override
     public Thread newThread(Runnable r) {
         Thread t = newThread(FastThreadLocalRunnable.wrap(r), prefix + nextId.incrementAndGet());

@@ -63,10 +63,7 @@ public final class NettyRuntime {
         @SuppressForbidden(reason = "to obtain default number of available processors")
         synchronized int availableProcessors() {
             if (this.availableProcessors == 0) {
-                final int availableProcessors =
-                        SystemPropertyUtil.getInt(
-                                "io.netty.availableProcessors",
-                                Runtime.getRuntime().availableProcessors());
+                final int availableProcessors = SystemPropertyUtil.getInt("io.netty.availableProcessors", Runtime.getRuntime().availableProcessors());
                 setAvailableProcessors(availableProcessors);
             }
             return this.availableProcessors;

@@ -34,13 +34,13 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * 本地线程映射
  * The internal data structure that stores the thread-local variables for Netty and all {@link FastThreadLocal}s.
  * Note that this class is for internal use only and is subject to change at any time.  Use {@link FastThreadLocal}
  * unless you know what you are doing.
  */
-public final class InternalThreadLocalMap extends UnpaddedInternalThreadLocalMap {
-    private static final ThreadLocal<InternalThreadLocalMap> slowThreadLocalMap =
-            new ThreadLocal<InternalThreadLocalMap>();
+public final class InternalThreadLocalMap {
+    private static final ThreadLocal<InternalThreadLocalMap> slowThreadLocalMap = new ThreadLocal<InternalThreadLocalMap>();
     private static final AtomicInteger nextIndex = new AtomicInteger();
     // Internal use only.
     public static final int VARIABLES_TO_REMOVE_INDEX = nextVariableIndex();
@@ -103,9 +103,11 @@ public final class InternalThreadLocalMap extends UnpaddedInternalThreadLocalMap
 
     public static InternalThreadLocalMap getIfSet() {
         Thread thread = Thread.currentThread();
+        // 如果是 FastThreadLocalThread 则返回 threadLocalMap
         if (thread instanceof FastThreadLocalThread) {
             return ((FastThreadLocalThread) thread).threadLocalMap();
         }
+        //否则返回 ThreadLocal的默认返回
         return slowThreadLocalMap.get();
     }
 

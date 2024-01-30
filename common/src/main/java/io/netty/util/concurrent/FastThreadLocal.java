@@ -25,16 +25,20 @@ import java.util.Set;
 import static io.netty.util.internal.InternalThreadLocalMap.VARIABLES_TO_REMOVE_INDEX;
 
 /**
+ * 一个特殊变体的本地线程 参考ThreadLocal 有更高的性能
  * A special variant of {@link ThreadLocal} that yields higher access performance when accessed from a
  * {@link FastThreadLocalThread}.
  * <p>
+ *  内部一个FastThreadLocal 使用常量数组做索引 而不是使用哈希code或者哈希表来查找变量, 虽然看是很微妙, 与哈希表相比有些许的性能提升, 但是当经常访问时提升就很厉害了
  * Internally, a {@link FastThreadLocal} uses a constant index in an array, instead of using hash code and hash table,
  * to look for a variable.  Although seemingly very subtle, it yields slight performance advantage over using a hash
  * table, and it is useful when accessed frequently.
  * </p><p>
+ *     利用线程的局部变量, 你的线程必须是 FastThreadLocalThread 或者 他的子类, 默认情况下 创建所有的线程都是通过 DefaultThreadFactory 是由于这个原因
  * To take advantage of this thread-local variable, your thread must be a {@link FastThreadLocalThread} or its subtype.
  * By default, all threads created by {@link DefaultThreadFactory} are {@link FastThreadLocalThread} due to this reason.
  * </p><p>
+ *     需要注意的是这个快速路径仅适用用FastThreadLocalThread 的子线程, 因为它需要一个特殊的字段来存储必要的状态, 任何其他类型的线程的访问都会退回到常规线程ThreadLocal
  * Note that the fast path is only possible on threads that extend {@link FastThreadLocalThread}, because it requires
  * a special field to store the necessary state.  An access by any other kind of thread falls back to a regular
  * {@link ThreadLocal}.
@@ -46,23 +50,25 @@ import static io.netty.util.internal.InternalThreadLocalMap.VARIABLES_TO_REMOVE_
 public class FastThreadLocal<V> {
 
     /**
+     * 移除所有当前线程绑定的值 , 该操作当是容器环境非常有用, 防止线程间数据污染
      * Removes all {@link FastThreadLocal} variables bound to the current thread.  This operation is useful when you
      * are in a container environment, and you don't want to leave the thread local variables in the threads you do not
      * manage.
      */
     public static void removeAll() {
+        // 获取内部线程map
         InternalThreadLocalMap threadLocalMap = InternalThreadLocalMap.getIfSet();
         if (threadLocalMap == null) {
             return;
         }
 
         try {
+            // VARIABLES_TO_REMOVE_INDEX 序号累加值
             Object v = threadLocalMap.indexedVariable(VARIABLES_TO_REMOVE_INDEX);
             if (v != null && v != InternalThreadLocalMap.UNSET) {
                 @SuppressWarnings("unchecked")
                 Set<FastThreadLocal<?>> variablesToRemove = (Set<FastThreadLocal<?>>) v;
-                FastThreadLocal<?>[] variablesToRemoveArray =
-                        variablesToRemove.toArray(new FastThreadLocal[0]);
+                FastThreadLocal<?>[] variablesToRemoveArray = variablesToRemove.toArray(new FastThreadLocal[0]);
                 for (FastThreadLocal<?> tlv: variablesToRemoveArray) {
                     tlv.remove(threadLocalMap);
                 }
